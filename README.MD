@@ -24,7 +24,7 @@ The easiest way to see the system in action is to run the **self-contained demo*
 
 ```bash
 # Navigate to the project directory
-cd /Users/paku/PycharmProjects/trading_service_demo
+cd {PATH_TO_DIR}/trading_service_demo
 
 # Run the demo (requires only Python 3.8+)
 python3 demo_hft_system.py
