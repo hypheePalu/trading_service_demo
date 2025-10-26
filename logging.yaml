@@ -1,0 +1,184 @@
+# logging.yaml
+version: 1 # Configuration file version
+disable_existing_loggers: false # Do not disable existing loggers
+
+formatters: # Define log output formats
+  colored:
+    '()': colorlog.ColoredFormatter # Use colorlog's colored formatter
+    format:  "%(log_color)s%(levelname)-8s%(reset)s | %(asctime)s.%(msecs)03d | %(blue)s%(name)s - %(filename)s:%(lineno)d - %(funcName)s()%(reset)s | %(message)s"
+    datefmt: "%m-%d %H:%M:%S"
+    log_colors:
+      DEBUG: 'cyan'
+      INFO: 'green'
+      WARNING: 'yellow'
+      ERROR: 'red'
+      CRITICAL: 'red,bg_white'
+  
+  file:
+    format: "%(levelname)-8s | %(asctime)s.%(msecs)03d | %(name)s - %(filename)s:%(lineno)d - %(funcName)s() | %(message)s"
+    datefmt: "%Y-%m-%d %H:%M:%S"
+  
+  error_file:
+    format: "%(levelname)-8s | %(asctime)s.%(msecs)03d | %(name)s - %(filename)s:%(lineno)d - %(funcName)s() | %(message)s"
+    datefmt: "%Y-%m-%d %H:%M:%S"
+
+handlers: # Define log output destinations
+  console:
+    class: logging.StreamHandler # Output to standard output/terminal
+    level: DEBUG # Handler's minimum processing level, ultimately limited by logger level
+    formatter: colored # Use the colored formatter defined above
+    stream: ext://sys.stdout # Output to standard output
+  
+  info_file:
+    class: logging.handlers.TimedRotatingFileHandler
+    level: INFO
+    formatter: file
+    filename: logs/system.log
+    when: 'midnight'
+    interval: 1
+    backupCount: 30
+    encoding: utf8
+    
+  error_file:
+    class: logging.handlers.TimedRotatingFileHandler
+    level: ERROR
+    formatter: error_file
+    filename: logs/error.log
+    when: 'midnight'
+    interval: 1
+    backupCount: 30
+    encoding: utf8
+
+  signal_file:
+    class: logging.handlers.TimedRotatingFileHandler
+    level: INFO
+    formatter: file
+    filename: logs/signals.log
+    when: 'midnight'
+    interval: 1
+    backupCount: 30
+    encoding: utf8
+
+  signal_console:
+    class: logging.StreamHandler
+    level: INFO
+    formatter: colored
+    stream: ext://sys.stdout
+
+loggers: # Define logger levels for specific modules
+  # Set log levels for your various modules
+  # Module names correspond to your .py file names, but separated by dots
+  # For example: if you have binance_data_feed.py, book_manager.py
+  data_feeds.BinanceDataFeed:
+    level: INFO
+    handlers: [console, info_file, error_file]
+    propagate: false # Do not pass logs to parent logger (root logger), avoid duplicate output
+
+  data_feeds.MaxDataFeed:
+    level: WARNING
+    handlers: [console, info_file, error_file]
+    propagate: false # Do not pass logs to parent logger (root logger), avoid duplicate output
+
+  recorder.AsyncSpotL1BookUpdateRecorder:
+    level: DEBUG
+    handlers: [console, info_file, error_file]
+    propagate: false
+
+  book_manager.MaxBookManager:
+    level: INFO
+    handlers: [console, info_file, error_file]
+    propagate: false # Do not pass logs to parent logger (root logger), avoid duplicate output
+
+  msg_queue.AsyncMessageQueue:
+    level: INFO
+    handlers: [console, info_file, error_file]
+    propagate: false # Do not pass logs to parent logger (root logger), avoid duplicate output
+
+  data_feeds.BackPackDataFeed:
+    level: WARNING # Backpack data feed only shows INFO or above
+    handlers: [console, info_file, error_file]
+    propagate: false
+
+  data_feeds.ReferenceRateDataFeed:
+    level: INFO
+    handlers: [console, info_file, error_file]
+    propagate: false
+
+  private_data_feed.MaxOrderDataFeed:
+    level: DEBUG # Backpack data feed only shows INFO or above
+    handlers: [console, info_file, error_file]
+    propagate: false
+
+  db_manager.AsyncBookTickerRecorder:
+    level: INFO # Backpack data feed only shows INFO or above
+    handlers: [console, info_file, error_file]
+    propagate: false
+
+  db_connector:
+    level: DEBUG # Backpack data feed only shows INFO or above
+    handlers: [console, info_file, error_file]
+    propagate: false
+
+  recorder.AsyncSpotL2BookUpdateRecorder:
+    level: DEBUG
+    handlers: [console, info_file, error_file]
+    propagate: false
+
+  arb_scanner.ArbScanner:
+    level: INFO
+    handlers: [console, info_file, error_file]
+    propagate: false
+
+  order_manager.MaxOrderManager:
+    level: INFO
+    handlers: [console, info_file, error_file]
+    propagate: false
+
+  position_manager.MaxPositionManager:
+    level: INFO
+    handlers: [console, info_file, error_file]
+    propagate: false
+
+  test_scanner.TestScanner:
+    level: DEBUG
+    handlers: [console, info_file, error_file]
+    propagate: false
+
+  api_client.MaxAPIClient:
+    level: INFO
+    handlers: [ console, info_file, error_file ]
+    propagate: false
+
+  httpx:
+    level: WARNING
+    handlers: [console, info_file, error_file]
+    propagate: false
+
+  # Can set a higher log level for nats-py library to avoid too many details
+  nats:
+    level: DEBUG
+    handlers: [console, info_file, error_file]
+    propagate: false
+
+  market_data.MarketData:
+    level: INFO
+    handlers: [ console, info_file, error_file ]
+    propagate: false
+
+  arb_scanner.StableScanner:
+    level: DEBUG
+    handlers: [ console, info_file, error_file ]
+    propagate: false
+
+  arb_scanner.StableScanner.signals:
+    level: INFO
+    handlers: [ signal_file ]
+    propagate: false
+
+
+  # If your root logger also needs special configuration, you can define it this way
+  # Otherwise, the root settings below will take effect
+
+root: # Root logger (application's default logger)
+  level: INFO # Default level is INFO, unless specific modules set a lower level
+  handlers: [console, info_file, error_file] # Output logs to console and file handlers
